@@ -10,6 +10,8 @@ def logistic_func(x):
     # Output: logistic(x)
     ####################################################################
 
+    L = 1 / (1 + np.exp(-x))
+
     return L
 
 def train(X_train, y_train, tol = 10 ** -4):
@@ -21,6 +23,32 @@ def train(X_train, y_train, tol = 10 ** -4):
     # Output: the weight update result [w_0, w_1, w_2, ...]
     ####################################################################
 
+    dim = len(X_train[0]) + 1
+    weights = np.random.randn((dim))
+
+    def g(x):
+        #print("g:w = {}".format(weights))
+        return np.dot(weights[1:], x.T) + weights[0]
+
+    while True:
+        #print("w={}".format(weights))
+        w = np.copy(weights)
+        w[0] = weights[0] + LearningRate * np.sum((y_train - logistic_func(g(X_train))))
+        for i in range(1, dim):
+            #print(i)
+            #print(weights)
+            w[i] = weights[i] + LearningRate * np.sum((y_train - logistic_func(g(X_train))) * X_train.T[i-1])
+
+        diff = weights - w
+        diff = np.linalg.norm(diff)
+        #print(diff)
+
+        if diff < tol:
+            weights = w
+            break
+
+        weights = w
+
     return weights
 
 def train_matrix(X_train, y_train, tol = 10 ** -4):
@@ -31,6 +59,20 @@ def train_matrix(X_train, y_train, tol = 10 ** -4):
     # YOUR CODE HERE!
     # Output: the weight update result [w_0, w_1, w_2, ...]
     ####################################################################
+    X = np.column_stack([np.ones((X_train.shape[0],1)) , X_train])
+    weights = np.random.randn((len(X[0])))
+
+    def g(x):
+        #print("g:w = {}".format(weights))
+        return np.dot(weights[1:], x.T) + weights[0]
+
+    while True:
+        w = np.copy(weights)
+        w = weights + LearningRate * np.matmul((y_train - logistic_func(np.matmul(X,weights))).T , X)
+        if np.linalg.norm(weights - w) < tol:
+            weights = w
+            break
+        weights = w
 
     return weights
 
@@ -40,6 +82,12 @@ def predict(X_test, weights):
     # YOUR CODE HERE!
     # The predict labels of all points in test dataset.
     ####################################################################
+    def g(x):
+        return np.dot(weights[1:], x.T) + weights[0]
+
+
+    predictions = logistic_func(g(X_test))
+    predictions = np.around(predictions)
 
     return predictions
 
