@@ -1,0 +1,1 @@
+Number of wrong predictions is: 0
